@@ -1,0 +1,7 @@
+version: '3.3'
+services:
+  rabbitmq:
+    image: ${DOCKER_REPO}/rabbitmq:3.7-management
+    build:
+      context: .
+      dockerfile: dockerfile/rabbitmq
