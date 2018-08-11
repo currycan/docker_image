@@ -3,8 +3,8 @@ FROM currycan/centos:7.5.1804
 LABEL maintainer "Platform/IIBU <zhangzhitao@fmsh.com.cn>"
 
 RUN set -xe && \
-    curl -o ./jre-8u181-linux-x64.rpm http://download.oracle.com/otn-pub/java/jdk/8u181-b13/96a7b8442fe848ef90c96a2fad6ed6d1/jre-8u181-linux-x64.rpm?AuthParam=1533981856_31c431cc822912cabf5b9973851feaf1 && \
-    rpm -Uvh *.rpm --nodeps --force && \
+    curl -L -b "oraclelicense=a" -O http://download.oracle.com/otn-pub/java/jdk/8u181-b13/96a7b8442fe848ef90c96a2fad6ed6d1/jre-8u181-linux-x64.rpm && \
+    yum localinstall -y jre-8u181-linux-x64.rpm && \
     rm -f *.rpm && \
     yum update -y && \
     yum clean all
@@ -48,3 +48,4 @@ ENV JAVA_OPTS="\
     -XX:+UseGCLogFileRotation \
     -XX:NumberOfGCLogFiles=5 \
     -XX:GCLogFileSize=10M"
+   
