@@ -1,4 +1,4 @@
-FROM harbor.iibu.com/base/centos:7.5.1804
+FROM currycan/centos:7.5.1804
 
 LABEL maintainer "Platform/IIBU <zhangzhitao@fmsh.com.cn>"
 
