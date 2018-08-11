@@ -7,9 +7,9 @@ RUN set -xe && \
     yum update -y && \
     yum install -y nginx && \
     yum clean all && \
-    mkdir -p /usr/share/nginx/config && \
-    mv /etc/nginx/nginx.conf /usr/share/nginx/config/nginx.conf && \
-    ln -sf /etc/nginx/nginx.conf /usr/share/nginx/config/nginx.conf
+    mkdir -p /nginx/config/ && \
+    mv /etc/nginx/nginx.conf /nginx/config/nginx.conf && \
+    ln -sf /nginx/config/nginx.conf /etc/nginx/nginx.conf
 
 # USER 1001
 
@@ -17,6 +17,6 @@ EXPOSE 80 443
 
 STOPSIGNAL SIGTERM
 
-VOLUME /usr/share/nginx/html/ /etc/nginx/conf.d/ /usr/share/nginx/config/
+VOLUME /nginx/html/ /etc/nginx/conf.d/ /nginx/config/
 
 CMD ["nginx", "-g", "daemon off;"]
