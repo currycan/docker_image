@@ -7,5 +7,3 @@ RUN set -ex && \
     source ~/.bashrc && \
     nvm install v8.11.3 && \
     npm install -g cnpm --registry=https://registry.npm.taobao.org
-
-CMD [ "node" ]
