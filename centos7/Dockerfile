@@ -2,9 +2,6 @@ FROM centos:7.5.1804
 
 LABEL maintainer "Platform/IIBU <zhangzhitao@fmsh.com.cn>"
 
-ENV TZ=Asia/Shanghai \
-    LC_ALL=zh_CN.utf8
-
 RUN set -xe && \
     \cp -f /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup && \
@@ -15,5 +12,8 @@ RUN set -xe && \
     localedef -c -f UTF-8 -i zh_CN zh_CN.utf8 && \
     yum update -y && \
     yum clean all
+
+ENV TZ=Asia/Shanghai \
+    LC_ALL=zh_CN.utf8
 
 CMD ["/bin/bash"]
