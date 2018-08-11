@@ -11,7 +11,7 @@ RUN set -xe && \
     mv /etc/nginx/nginx.conf /usr/share/nginx/config/nginx.conf && \
     ln -sf /etc/nginx/nginx.conf /usr/share/nginx/config/nginx.conf
 
-USER 1001
+# USER 1001
 
 EXPOSE 80 443
 
