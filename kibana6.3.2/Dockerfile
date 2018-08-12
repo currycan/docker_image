@@ -2,6 +2,8 @@ FROM currycan/openjdk:8-jre
 
 LABEL maintainer "Platform/IIBU <zhangzhitao@fmsh.com.cn>"
 
+ARG VERSION=6.3.2
+
 RUN set -ex \
     && cd /tmp \
     && echo "===> Install Kibana..." \
