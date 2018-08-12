@@ -7,7 +7,7 @@ ARG VERSION=6.3.2
 RUN set -ex \
     && cd /tmp \
     && echo "===> Install Elasticsearch..." \
-    && wget -O elasticsearch.tar.gz http://195.154.164.217:8080/elasticsearch-${VERSION}.gz \
+    && wget -O elasticsearch.tar.gz http://195.154.164.217:8080/elasticsearch-${VERSION}.tar.gz \
     && tar -xf elasticsearch.tar.gz \
     && mv elasticsearch /usr/share/ \
     && groupadd -r elasticsearch \
