@@ -7,7 +7,7 @@ ARG VERSION=6.3.2
 RUN set -ex \
     && cd /tmp \
     && echo "===> Install Logstash..." \
-    && wget -O logstash.tar.gz http://195.154.164.217:8080/logstash.tar.gz \
+    && wget -O logstash.tar.gz http://195.154.164.217:8080/logstash-${VERSION}.tar.gz \
     && tar -xf logstash.tar.gz \
     && mv logstash /usr/share/ \
     && groupadd -r logstash \
