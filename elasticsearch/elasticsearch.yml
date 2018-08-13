@@ -4,7 +4,7 @@ path:
   data: /usr/share/elasticsearch/data
 
 ## cluster
-cluster.name: ${CLUSTER_NAME}
+cluster.name: ${ES_CLUSTER_NAME}
 
 ## node
 node.name: ${HOSTNAME}
@@ -39,7 +39,7 @@ network.publish_host: ${ES_HOST_IP}
 
 ## discovery
 discovery.zen.minimum_master_nodes: 1
-discovery.zen.ping.unicast.hosts: ["elasticsearch:9200", "elasticsearch2:9201"]
+discovery.zen.ping.unicast.hosts: ["elasticsearch:9300", "elasticsearch2:9301"]
 
 # x-pack
 xpack.security.enabled: true
