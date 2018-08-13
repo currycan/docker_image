@@ -8,7 +8,7 @@ services:
     hostname: es_node1
     volumes:
       - esdata1:/usr/share/elasticsearch/data
-      - ./volumes/elasticsearch/config1/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./volumes/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     environment:
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       - "ES_CLUSTER_NAME=logging-prod"
@@ -38,7 +38,7 @@ services:
     hostname: es_node2
     volumes:
       - esdata2:/usr/share/elasticsearch/data
-      - ./volumes/elasticsearch/config2/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./volumes/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     environment:
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       - "ES_CLUSTER_NAME=logging-prod"
