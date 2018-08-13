@@ -31,8 +31,8 @@ indices.recovery.max_bytes_per_sec: 100mb
 
 ## network
 network.host: 0.0.0.0
-transport.tcp.port: ${ES_TCP_PORT}
 http.port: ${ES_HTTP_PORT}
+transport.tcp.port: ${ES_TCP_PORT}
 
 ## 默认 network.publish_host = network.host. 但是 network.host: 0.0.0.0，则需明确定义 network.publish_host
 network.publish_host: ${ES_HOST_IP}
