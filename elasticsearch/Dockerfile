@@ -25,7 +25,7 @@ ENV PATH=/usr/share/elasticsearch/bin:$PATH \
     ES_HTTP_PORT="9200" \
     ES_TCP_PORT="9300"
 
-HEALTHCHECK --timeout=5s CMD wget -q -O - http://$HOSTNAME:$ES_HTTP_PORT/_cat/health
+# HEALTHCHECK --timeout=5s CMD wget -q -O - http://$HOSTNAME:$ES_HTTP_PORT/_cat/health
 
 VOLUME ["/usr/share/elasticsearch/data"]
 
