@@ -10,6 +10,7 @@ RUN set -ex \
     && wget -O elasticsearch.tar.gz http://195.154.164.217:8080/elasticsearch-${VERSION}.tar.gz \
     && tar -xf elasticsearch.tar.gz \
     && mv elasticsearch /usr/share/ \
+    && rm -rf /usr/share/elasticsearch/data/nodes/ \
     && groupadd -r elasticsearch \
     && useradd -r -g elasticsearch elasticsearch \
     && chown -R elasticsearch:root /usr/share/elasticsearch \
