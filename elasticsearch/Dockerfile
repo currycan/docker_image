@@ -10,7 +10,6 @@ RUN set -ex \
     && wget -O elasticsearch.tar.gz http://195.154.164.217:8080/elasticsearch-${VERSION}.tar.gz \
     && tar -xf elasticsearch.tar.gz \
     && mv elasticsearch /usr/share/ \
-    && rm -rf /usr/share/elasticsearch/data/nodes/ \
     && groupadd -r elasticsearch \
     && useradd -r -g elasticsearch elasticsearch \
     && chown -R elasticsearch:root /usr/share/elasticsearch \
@@ -22,9 +21,15 @@ RUN set -ex \
 
 WORKDIR /usr/share/elasticsearch
 
-ENV PATH /usr/share/elasticsearch/bin:$PATH
+ENV PATH=/usr/share/elasticsearch/bin:$PATH \
+    ES_JAVA_OPTS=-Xms2g -Xmx2g \
+    ES_HOST_IP=127.0.0.1 \
+    ES_TCP_PORT=9200 \
+    ES_HTTP_PORT=9300 \
+    CLUSTER_NAME=logging-prod \
+    discovery.zen.ping.unicast.hosts="127.0.0.1:9300"
 
-HEALTHCHECK --timeout=5s CMD wget -q -O - http://$HOSTNAME:9200/_cat/health
+HEALTHCHECK --timeout=5s CMD wget -q -O - http://$HOSTNAME:$ES_TCP_PORT/_cat/health
 
 VOLUME ["/usr/share/elasticsearch/data"]
 
