@@ -22,12 +22,8 @@ RUN set -ex \
 WORKDIR /usr/share/elasticsearch
 
 ENV PATH=/usr/share/elasticsearch/bin:$PATH \
-    ES_JAVA_OPTS="-Xms2g -Xmx2g" \
-    ES_HOST_IP="127.0.0.1" \
     ES_TCP_PORT="9200" \
-    ES_HTTP_PORT="9300" \
-    CLUSTER_NAME="logging-prod" \
-    discovery.zen.ping.unicast.hosts="127.0.0.1:9200"
+    ES_HTTP_PORT="9300"
 
 HEALTHCHECK --timeout=5s CMD wget -q -O - http://$HOSTNAME:$ES_TCP_PORT/_cat/health
 
