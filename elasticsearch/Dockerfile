@@ -12,7 +12,7 @@ RUN set -ex \
     && mv elasticsearch /usr/share/ \
     && groupadd -r elasticsearch \
     && useradd -r -g elasticsearch elasticsearch \
-    && chown -R elasticsearch:root /usr/share/elasticsearch \
+    && chown -R elasticsearch:elasticsearch /usr/share/elasticsearch \
     && wget -O /usr/local/bin/docker-entrypoint.sh http://195.154.164.217:8080/source/elasticsearch/docker-entrypoint.sh \
     && chmod +x /usr/local/bin/docker-entrypoint.sh \
     && yum update -y \
