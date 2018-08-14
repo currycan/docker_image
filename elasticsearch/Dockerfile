@@ -27,7 +27,7 @@ ENV PATH=/usr/share/elasticsearch/bin:$PATH \
 
 # HEALTHCHECK --timeout=5s CMD wget -q -O - http://$HOSTNAME:$ES_HTTP_PORT/_cat/health
 
-VOLUME ["/usr/share/elasticsearch/data"]
+VOLUME ["/usr/share/elasticsearch/data","/usr/share/elasticsearch/logs"]
 
 EXPOSE 9200 9300
 ENTRYPOINT ["docker-entrypoint.sh"]
