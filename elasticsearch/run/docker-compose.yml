@@ -1,0 +1,131 @@
+version: '3.1'
+
+services:
+  es1:
+    image: currycan/elasticsearch:6.3.2
+    container_name: es_node1
+    domainname: elasticsearch
+    hostname: es_node1
+    volumes:
+      - ./volumes/elasticsearch/es1/data:/usr/share/elasticsearch/data
+      - ./volumes/elasticsearch/es1/logs:/usr/share/elasticsearch/logs
+      - ./volumes/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "ES_CLUSTER_NAME=logging-prod"
+      - "ES_HOST_IP=192.168.43.105"
+      - "ES_HTTP_PORT=9200"
+      - "ES_TCP_PORT=9300"
+    ulimits:
+      nproc: 65535
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200 # http.port
+      - 9300:9300 # transport.tcp.port
+    network_mode: "host"
+    extra_hosts:
+      - "elasticsearch:192.168.43.105"
+      - "elasticsearch2:192.168.43.105"
+    logging:
+      options:
+        max-size: "100M"
+        max-file: "3"
+
+  es2:
+    image: currycan/elasticsearch:6.3.2
+    container_name: es_node2
+    domainname: elasticsearch2
+    hostname: es_node2
+    volumes:
+      - ./volumes/elasticsearch/es2/data:/usr/share/elasticsearch/data
+      - ./volumes/elasticsearch/es2/logs:/usr/share/elasticsearch/logs
+      - ./volumes/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "ES_CLUSTER_NAME=logging-prod"
+      - "ES_HOST_IP=192.168.43.105"
+      - "ES_HTTP_PORT=9201"
+      - "ES_TCP_PORT=9301"
+    ulimits:
+      nproc: 65535
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9201:9201 # http.port
+      - 9301:9301 # transport.tcp.port
+    network_mode: "host"
+    extra_hosts:
+      - "elasticsearch:192.168.43.105"
+      - "elasticsearch2:192.168.43.105"
+    logging:
+      options:
+        max-size: "100M"
+        max-file: "3"
+
+  logstash:
+    image: currycan/logstash:6.3.2
+    container_name: logstash
+    depends_on:
+      - es1
+    volumes:
+      - ./volumes/logstash/pipeline:/usr/share/logstash/pipeline
+      - ./volumes/logstash/config/logstash.yml:/usr/share/logstash/logstash.yml
+      - ./volumes/logstash/data:/usr/share/logstash/data
+    ports:
+      - 5010:5010 # tcp log port
+      - 6010:6010 # http log port
+      - 9600:9600 # http.port
+    network_mode: "host"
+    extra_hosts:
+      - "elasticsearch:192.168.43.105"
+      - "elasticsearch2:192.168.43.105"
+    logging:
+      options:
+        max-size: "100M"
+        max-file: "3"
+
+  kibana:
+    image: currycan/kibana:6.3.2
+    container_name: kibana
+    depends_on:
+      - es1
+    volumes:
+      - ./volumes/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - ./volumes/kibana/data:/usr/share/kibana/data
+    ports:
+      - 5601:5601
+    network_mode: "host"
+    extra_hosts:
+      - "elasticsearch:192.168.43.105"
+      - "elasticsearch2:192.168.43.105"
+    logging:
+      options:
+        max-size: "100M"
+        max-file: "3"
+
+  apm:
+    image: currycan/apm-server:6.3.2
+    container_name: apm
+    depends_on:
+      - kibana
+    volumes:
+      - ./volumes/apm/config/apm-server.yml:/usr/share/apm/config/apm-server.yml
+      - ./volumes/apm/data:/usr/share/apm/data
+    ports:
+      - 8200:8200
+    network_mode: "host"
+    extra_hosts:
+      - "elasticsearch:192.168.43.105"
+      - "elasticsearch2:192.168.43.105"
+    logging:
+      options:
+        max-size: "100M"
+        max-file: "3"
+
+volumes:
+  esdata1:
+  esdata2:
+
