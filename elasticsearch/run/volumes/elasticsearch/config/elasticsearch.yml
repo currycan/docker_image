@@ -1,0 +1,62 @@
+# Path to directory where to store the data and
+path:
+  logs: /usr/share/elasticsearch/logs
+  data: /usr/share/elasticsearch/data
+
+# Use a descriptive name for your cluster:
+cluster.name: ${ES_CLUSTER_NAME}
+
+# Use a descriptive name for the node:
+node.name: ${HOSTNAME}
+
+# set the node can be voted as as master 
+node.master: true
+
+# set the node as date that store the index data
+node.data: true
+
+# memory lock,if fail then ulimit -l unlimited
+bootstrap.memory_lock: true
+
+# Allow recovery process after N nodes in a cluster are up
+gateway.recover_after_nodes: 1
+
+# Set the timeout to initiate the recovery process, once the N nodes
+# from previous setting are up (accepts time value):
+gateway.recover_after_time: 10m
+
+# Set how many nodes are expected in this cluster. Once these N nodes
+# are up (and recover_after_nodes is met), begin recovery process immediately
+# (without waiting for recover_after_time to expire):
+gateway.expected_nodes: 2
+
+# Set to throttle throughput when recovering (eg. 100mb, by default 20mb)
+indices.recovery.max_bytes_per_sec: 100mb
+
+## network
+network.host: 0.0.0.0
+http.port: ${ES_HTTP_PORT}
+transport.tcp.port: ${ES_TCP_PORT}
+
+## 默认 network.publish_host = network.host. 但是 network.host: 0.0.0.0，则需明确定义 network.publish_host
+network.publish_host: ${ES_HOST_IP}
+
+## discovery
+discovery.zen.minimum_master_nodes: 1
+discovery.zen.fd.ping_timeout: 30s
+discovery.zen.ping.unicast.hosts: 
+  - elasticsearch:9300
+  - elasticsearch2:9301
+
+# x-pack
+xpack.security.enabled: true
+xpack.monitoring.enabled: true
+xpack.graph.enabled: true
+xpack.watcher.enabled: true
+
+# ---------------------------------- Various -----------------------------------
+#
+# Require explicit names when deleting indices:
+#
+action.destructive_requires_name: true
+
