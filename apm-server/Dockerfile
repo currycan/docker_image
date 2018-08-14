@@ -22,7 +22,7 @@ RUN set -ex \
 
 WORKDIR /usr/share/apm-server
 
-ENV PATH=/usr/share/apm-server/bin:$PATH ELASTIC_CONTAINER=true
+ENV PATH=/usr/share/apm-server:$PATH ELASTIC_CONTAINER=true
 
 VOLUME ["/usr/share/apm-server/data"]
 
