@@ -13,7 +13,7 @@ RUN set -ex \
     && mv apm-server /usr/share/ \
     && groupadd -r apm-server \
     && useradd -r -g apm-server apm-server \
-    && chown -R apm-server:root /usr/share/apm-server \
+    && chown -R root:apm-server /usr/share/apm-server \
     && wget -O /usr/local/bin/docker-entrypoint.sh http://195.154.164.217:8080/source/apm-server/docker-entrypoint.sh \
     && chmod +x /usr/local/bin/docker-entrypoint.sh \
     && yum update -y \
