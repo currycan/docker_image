@@ -3,7 +3,7 @@ FROM currycan/openjdk:8-jre
 LABEL maintainer "Platform/IIBU <zhangzhitao@fmsh.com.cn>"
 
 RUN set -ex; yum update -y; \
-    yum install -y subversion git; \
+    yum install -y subversion git libltdl.so.7; \
     curl -o /etc/yum.repos.d/wandisco-svn.repo https://raw.githubusercontent.com/currycan/docker_image/master/jenkins/wandisco-svn.repo; \
     yum --disablerepo="*" --enablerepo="WandiscoSVN" install -y subversion; \
     yum clean all
