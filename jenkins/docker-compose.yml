@@ -1,9 +1,19 @@
-master:
-  build: .
-  environment:
-    JAVA_OPTS: "-Djava.awt.headless=true"
-  ports:
-    - "50000:50000"
-    - "8080:8080"
-  volumes:
-    - /var/jenkins_home
+version: '3.6'
+services:
+  jenkins:
+    image: currycan/jenkins:2.121.1
+    container_name: jenkins
+    hostname: jenkins
+    privileged: true
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      JAVA_OPTS: "-Djava.awt.headless=true"
+    volumes:
+      - ./jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock:r
+      - /usr/bin/docker:/usr/bin/docker:r
+    network_mode: host
+    extra_hosts:
+      - "jenkins:127.0.0.1"
