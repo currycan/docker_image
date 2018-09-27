@@ -1,7 +1,7 @@
 version: '3.6'
 services:
   jenkins:
-    image: currycan/jenkins:2.121.1
+    image: currycan/jenkins:2.138.1
     container_name: jenkins
     hostname: jenkins
     privileged: true
@@ -12,8 +12,8 @@ services:
       JAVA_OPTS: "-Djava.awt.headless=true"
     volumes:
       - ./jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock:r
-      - /usr/bin/docker:/usr/bin/docker:r
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /usr/bin/docker:/usr/bin/docker:ro
     network_mode: host
     extra_hosts:
       - "jenkins:127.0.0.1"
