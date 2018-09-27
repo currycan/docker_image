@@ -1,10 +1,12 @@
-Maven Metadata Plugin for Jenkins CI server
-Maven Integration
-Maven Release Plug-in
-Maven Artifact ChoiceListProvider (Nexus)
-SVN 1.4 Compatibility
-SonarQube Scanner for Jenkins
-Mashup Portlets
-CloudBees Docker
-Role-based Authorization Strategy
-ansible
+Maven Metadata Plugin for Jenkins CI server:2.0.0
+Maven Integration:3.1.2
+Maven Release Plug-in:0.14.0
+Maven Artifact ChoiceListProvider (Nexus):1.3.2
+SVN 1.4 Compatibility:1.1
+SonarQube Scanner:2.8.1
+Mashup Portlets:1.0.9
+CloudBees Docker Build and Publish:1.3.2
+CloudBees Docker Traceability:1.2
+CloudBees Docker Hub/Registry Notification:2.3.0
+Role-based Authorization Strategy:2.9.0
+Ansible Tower:0.9.0
