@@ -1,0 +1,10 @@
+Maven Metadata Plugin for Jenkins CI server
+Maven Integration
+Maven Release Plug-in
+Maven Artifact ChoiceListProvider (Nexus)
+SVN 1.4 Compatibility
+SonarQube Scanner for Jenkins
+Mashup Portlets
+CloudBees Docker
+Role-based Authorization Strategy
+ansible
