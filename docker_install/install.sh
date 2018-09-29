@@ -34,27 +34,17 @@ ali_repo(){
 }
 
 initial_repo(){
-    if type ip >/dev/null 2>&1; then
-        if [ $(grep "$IP harbor.iibu.com" /etc/hosts | wc -l) = 1 ];then
-            echo "domain already add"
-        elif [[ $(ip a | grep 192.168.39 | wc -l) = 1 ]] || [[ $(ip a | grep 192.168.43 | wc -l) = 1 ]]; then
-            yum clean all
-            cat >> /etc/hosts << EOL
+    line=`ping $IP -c 1 -s 1 -W 1 | grep "100% packet loss" | wc -l`
+    if [ "${line}" != "0" ]; then
+        ali_repo
+    else
+        cat >> /etc/hosts << EOL
 $IP mirrors.fmsh.com
 EOL
-            iibu_repo
-        else
-            ali_repo
-        fi
-    else
-        line=`ping $IP -c 1 -s 1 -W 1 | grep "100% packet loss" | wc -l`
-        if [ "${line}" != "0" ]; then
-            ali_repo
-        else
-            iibu_repo
-        fi
+        iibu_repo
     fi
 }
+
 
 uninstall(){
     if type docker >/dev/null 2>&1; then
