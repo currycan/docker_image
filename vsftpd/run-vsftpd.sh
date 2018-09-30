@@ -39,7 +39,7 @@ configEnvKeys=(
 for configEnvKey in "${configEnvKeys[@]}"; do file_env "FTP_${configEnvKey^^}"; done
 
 if [ "${1:0:1}" = '-' ]; then
-    set -- vsftpd /etc/vsftpd/vsftpd.conf "$@"
+    set -- /usr/sbin/vsftpd /etc/vsftpd/vsftpd.conf "$@"
 fi
 
 # allow the container to be started with `--user`
@@ -52,7 +52,7 @@ if [ "$1" = 'vsftpd*' -a "$(id -u)" = '0' ]; then
         chown -R vsftpd:vsftpd "$path"
     done
     # exec gosu `--user` "$BASH_SOURCE" "$@"
-    set -- gosu vsftpd /etc/vsftpd/vsftpd.conf "$@"
+    set -- gosu /usr/sbin/vsftpd /etc/vsftpd/vsftpd.conf "$@"
 fi
 
 # Create home dir and update vsftpd user db:
