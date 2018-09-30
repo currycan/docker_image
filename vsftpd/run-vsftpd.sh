@@ -1,18 +1,67 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -eu
+
+# usage: file_env VAR [DEFAULT]
+#    ie: file_env 'XYZ_DB_PASSWORD' 'example'
+# (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of
+#  "$XYZ_DB_PASSWORD" from a file, especially for Docker's secrets feature)
+file_env() {
+    local var="$1"
+    local fileVar="${var}_FILE"
+    local def="${2:-}"
+    if [ "${!var:-}" ] && [ "${!fileVar:-}" ]; then
+        echo >&2 "error: both $var and $fileVar are set (but are exclusive)"
+        exit 1
+    fi
+    local val="$def"
+    if [ "${!var:-}" ]; then
+        val="${!var}"
+    elif [ "${!fileVar:-}" ]; then
+        val="$(< "${!fileVar}")"
+    fi
+    export "$var"="$val"
+    unset "$fileVar"
+}
+
+# backwards compatibility for default environment variables
+: "${LOG_STDOUT:=${LOG_STDOUT_FLAG:-true}}"
+
+configEnvKeys=(
+    user
+    pass
+    pasv_address
+    pasv_max_port
+    pasv_min_port
+    log_stdout_flag
+)
+
+for configEnvKey in "${configEnvKeys[@]}"; do file_env "FTP_${configEnvKey^^}"; done
+
+if [ "${1:0:1}" = '-' ]; then
+    set -- vsftpd /etc/vsftpd/vsftpd.conf "$@"
+fi
+
+# allow the container to be started with `--user`
+if [ "$1" = 'vsftpd*' -a "$(id -u)" = '0' ]; then
+    # Change the ownership of user-mutable directories to `--user`
+    for path in \
+        /home/vsftpd/${FTP_USER} \
+        /var/log/vsftpd \
+    ; do
+        chown -R vsftpd:vsftpd "$path"
+    done
+    # exec gosu `--user` "$BASH_SOURCE" "$@"
+    set -- gosu vsftpd /etc/vsftpd/vsftpd.conf "$@"
+fi
 
 # Create home dir and update vsftpd user db:
 mkdir -p "/home/vsftpd/${FTP_USER}"
-chown -R ftp:ftp /home/vsftpd/
-
-# FTP_PASS=`cat /dev/urandom | tr -dc A-Z-a-z-0-9 | head -c${1:-16}`
 
 echo -e "${FTP_USER}\n${FTP_PASS}" > /etc/vsftpd/virtual_users.txt
-/usr/bin/db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
-
-echo "pasv_address=${PASV_ADDRESS}" >> /etc/vsftpd/vsftpd.conf
-echo "pasv_max_port=${PASV_MAX_PORT}" >> /etc/vsftpd/vsftpd.conf
-echo "pasv_min_port=${PASV_MIN_PORT}" >> /etc/vsftpd/vsftpd.conf
+db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
 # Get log file path
+# FTP_PASS=`cat /dev/urandom | tr -dc A-Z-a-z-0-9 | head -c${1:-16}`
 LOG_FILE=`grep xferlog_file /etc/vsftpd/vsftpd.conf|cut -d= -f2`
 
 # stdout server info:
