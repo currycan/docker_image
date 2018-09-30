@@ -64,10 +64,10 @@ db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
 # FTP_PASS=`cat /dev/urandom | tr -dc A-Z-a-z-0-9 | head -c${1:-16}`
 LOG_FILE=`grep xferlog_file /etc/vsftpd/vsftpd.conf|cut -d= -f2`
 
-# stdout server info:
-if [ $LOG_STDOUT = "true" ]; then
-    exec "$@"
-else
+# # stdout server info:
+# if [ $LOG_STDOUT = "true" ]; then
+#     exec "$@"
+
 cat << EOB
     *************************************************
     SERVER SETTINGS
@@ -77,5 +77,4 @@ cat << EOB
     · Log file: $LOG_FILE
     · Redirect vsftpd log to STDOUT: No.
 EOB
-    exec "$@" 2>&1 | tee $LOG_FILE
-fi
+exec "$@"
