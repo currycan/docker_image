@@ -25,7 +25,7 @@ file_env() {
 }
 
 # backwards compatibility for default environment variables
-: "${LOG_STDOUT:=${LOG_STDOUT_FLAG:-true}}"
+: "${LOG_STDOUT:=${FTP_LOG_STDOUT_FLAG:-true}}"
 
 configEnvKeys=(
     user
