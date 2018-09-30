@@ -27,3 +27,4 @@ cat << EOB
     · Redirect vsftpd log to STDOUT: No.
 EOB
     exec "$@" 2>&1 | tee $LOG_FILE
+fi
