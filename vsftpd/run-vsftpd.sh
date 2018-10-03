@@ -44,7 +44,7 @@ configEnvKeys=(
 for configEnvKey in "${configEnvKeys[@]}"; do file_env "FTP_${configEnvKey^^}"; done
 
 if [ "${1:0:1}" = '-' ]; then
-    set -- /usr/sbin/vsftpd /etc/vsftpd/vsftpd.conf "$@"
+    set -- vsftpd /etc/vsftpd/vsftpd.conf "$@"
 fi
 
 # allow the container to be started with `--user`
@@ -57,7 +57,7 @@ if [ "$1" = 'vsftpd*' -a "$(id -u)" = '0' ]; then
         chown -R vsftpd:vsftpd "$path"
     done
     # exec gosu `--user` "$BASH_SOURCE" "$@"
-    set -- gosu /usr/sbin/vsftpd /etc/vsftpd/vsftpd.conf "$@"
+    set -- gosu vsftpd /etc/vsftpd/vsftpd.conf "$@"
 fi
 
 # Create home dir and update vsftpd user db:
@@ -70,9 +70,9 @@ db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
 LOG_FILE=`grep xferlog_file /etc/vsftpd/vsftpd.conf|cut -d= -f2`
 
 # # stdout server info:
-# if [ $LOG_STDOUT = "true" ]; then
-#     exec "$@"
-
+if [ $LOG_STDOUT = "true" ]; then
+    exec "$@"
+else
 cat << EOB
     *************************************************
     SERVER SETTINGS
@@ -83,3 +83,5 @@ cat << EOB
     · Redirect vsftpd log to STDOUT: No.
 EOB
 exec "$@"
+fi
+
