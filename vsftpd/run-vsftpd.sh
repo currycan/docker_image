@@ -24,7 +24,19 @@ file_env() {
     unset "$fileVar"
 }
 
+ENV FTP_USER=admin
+ENV FTP_PASS=password
+ENV FTP_PASV_ADDRESS=127.0.0.1
+ENV FTP_PASV_MIN_PORT=21100
+ENV FTP_PASV_MAX_PORT=21110
+ENV FTP_LOG_STDOUT_FLAG=true
+
 # backwards compatibility for default environment variables
+: "${USER:=${FTP_USER:-admin}}"
+: "${PASS:=${FTP_PASS:-$(cat /dev/urandom | tr -dc A-Z-a-z-0-9 | head -c${1:-16})}}"
+: "${ADDRESS:=${FTP_PASV_ADDRESS:-$(ip route|awk '/default/ { print $3 }')}}"
+: "${PASV_MIN_PORT:=${FTP_PASV_MIN_PORT:-21100}}"
+: "${PASV_MAX_PORT:=${FTP_PASV_MAX_PORT:-21110}}"
 : "${LOG_STDOUT:=${FTP_LOG_STDOUT_FLAG:-true}}"
 
 configEnvKeys=(
