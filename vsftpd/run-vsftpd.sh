@@ -70,6 +70,7 @@ LOG_FILE=`grep xferlog_file /etc/vsftpd/vsftpd.conf|cut -d= -f2`
 
 # # stdout server info:
 if [ $LOG_STDOUT = "true" ]; then
+    echo "$@"
     exec "$@"
 else
 cat << EOB
@@ -81,6 +82,7 @@ cat << EOB
     · Log file: $LOG_FILE
     · Redirect vsftpd log to STDOUT: No.
 EOB
+echo "$@"
 exec "$@"
 fi
 
