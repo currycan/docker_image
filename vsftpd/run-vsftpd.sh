@@ -53,7 +53,7 @@ _config() {
     )
 
     for configEnvKey in "${configEnvKeys[@]}"; do file_env "FTP_${configEnvKey^^}"; done
-    for configEnvKey in "${configEnvKeys[@]}"; do file_env "FTP_${configEnvKey^^}" "/etc/vsftpd/vsftpd.conf"; done
+    for configEnvKey in "${configEnvKeys[@]}"; do sed_conf "FTP_${configEnvKey^^}" "/etc/vsftpd/vsftpd.conf"; done
 
     echo -e "${FTP_USER}\n${FTP_PASS}" > /etc/vsftpd/virtual_users.txt
     db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
