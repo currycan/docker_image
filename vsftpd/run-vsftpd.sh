@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eou pipefail
+set -exou pipefail
 shopt -s nullglob
 
 # usage: file_env VAR [DEFAULT]
