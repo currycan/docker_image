@@ -34,7 +34,7 @@ _config() {
     # backwards compatibility for default environment variables
     : "${FTP_USER:=${USER:-admin}}"
     : "${FTP_PASS:=${PASS:-$(cat /dev/urandom | tr -dc A-Z-a-z-0-9 | head -c ${LEN:-16})}}"
-    : "${FTP_ADDRESS:=${PASV_ADDRESS:-$(ip route|awk '/default/ { print $3 }')}}"
+    : "${FTP_PASV_ADDRESS:=${PASV_ADDRESS:-$(ip route|awk '/default/ { print $3 }')}}"
     : "${FTP_PASV_MIN_PORT:=${PASV_MIN_PORT:-21100}}"
     : "${FTP_PASV_MAX_PORT:=${PASV_MAX_PORT:-21110}}"
 
@@ -51,7 +51,7 @@ _config() {
     echo -e "${FTP_USER}\n${FTP_PASS}" > /etc/vsftpd/virtual_users.txt
     db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
     # Get log file path
-    LOG_FILE=`grep vsftpd_log_file /etc/vsftpd/vsftpd.conf|cut -d= -f2`
+    FTP_LOG_FILE=`grep vsftpd_log_file /etc/vsftpd/vsftpd.conf|cut -d= -f2`
 }
 
 # # allow the container to be started with `--user`
@@ -67,9 +67,9 @@ if [ "$1" = 'vsftpd' ]; then
     cat << EOB
     SERVER SETTINGS
     ---------------
-    · FTP User: $USER
-    · FTP Password: $PASS
-    · Log file: $LOG_FILE
+    · FTP User: $FTP_USER
+    · FTP Password: $FTP_PASS
+    · Log file: $FTP_LOG_FILE
     · Redirect vsftpd log to STDOUT: No.
 EOB
     env
