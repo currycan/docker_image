@@ -33,15 +33,6 @@ fi
 # allow the container to be started with `--user`
 # if [[ "$1" == vsftpd* ]] && [ "$(id -u)" = '0' ]; then
 if [ "$1" = 'vsftpd' -a "$(id -u)" = '0' ]; then
-    # Change the ownership of user-mutable directories to `--user`
-    for path in \
-        /home/vsftpd/${FTP_USER} \
-        /var/log/vsftpd \
-        /etc/vsftpd/ \
-    ; do
-        chown -R vsftpd:vsftpd "$path"
-    done
-
     # backwards compatibility for default environment variables
     : "${USER:=${FTP_USER:-admin}}"
     : "${PASS:=${FTP_PASS:-$(cat /dev/urandom | tr -dc A-Z-a-z-0-9 | head -c${1:-16})}}"
@@ -49,6 +40,15 @@ if [ "$1" = 'vsftpd' -a "$(id -u)" = '0' ]; then
     : "${PASV_MIN_PORT:=${FTP_PASV_MIN_PORT:-21100}}"
     : "${PASV_MAX_PORT:=${FTP_PASV_MAX_PORT:-21110}}"
     : "${LOG_STDOUT:=${FTP_LOG_STDOUT_FLAG:-true}}"
+
+    # Change the ownership of user-mutable directories to `--user`
+    for path in \
+        /home/vsftpd/${USER} \
+        /var/log/vsftpd \
+        /etc/vsftpd/ \
+    ; do
+        chown -R vsftpd:vsftpd "$path"
+    done
 
     configEnvKeys=(
         user
@@ -61,9 +61,9 @@ if [ "$1" = 'vsftpd' -a "$(id -u)" = '0' ]; then
 
     for configEnvKey in "${configEnvKeys[@]}"; do file_env "FTP_${configEnvKey^^}"; done
     # Create home dir and update vsftpd user db:
-    mkdir -p "/home/vsftpd/${FTP_USER}"
+    mkdir -p "/home/vsftpd/${USER}"
 
-    echo -e "${FTP_USER}\n${FTP_PASS}" > /etc/vsftpd/virtual_users.txt
+    echo -e "${USER}\n${PASS}" > /etc/vsftpd/virtual_users.txt
     db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
     # Get log file path
     LOG_FILE=`grep xferlog_file /etc/vsftpd/vsftpd.conf|cut -d= -f2`
