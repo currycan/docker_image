@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eou pipefail
+set -exou pipefail
 shopt -s nullglob
 
 # usage: file_env VAR [DEFAULT]
@@ -27,9 +27,7 @@ file_env() {
 
 # if [ "${1:0:1}" = '-' ]; then
 if [ "${1#-}" != "$1" ]; then
-    set -- "$@" /etc/vsftpd/vsftpd.conf
-    echo ">>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<"
-    echo "$@"
+    set -- vsftpd /etc/vsftpd/vsftpd.conf "$@"
 fi
 
 # allow the container to be started with `--user`
