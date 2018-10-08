@@ -25,6 +25,12 @@ file_env() {
     unset "$fileVar"
 }
 
+sed_conf() {
+    local var="$1"
+    local file="$2"
+    sed -i -e "s!\${$var}!`eval echo '$'"$var"`!g" ${file}
+}
+
 # if [ "${1:0:1}" = '-' ]; then
 if [ "${1#-}" != "$1" ]; then
     set -- vsftpd /etc/vsftpd/vsftpd.conf "$@"
@@ -47,6 +53,7 @@ _config() {
     )
 
     for configEnvKey in "${configEnvKeys[@]}"; do file_env "FTP_${configEnvKey^^}"; done
+    for configEnvKey in "${configEnvKeys[@]}"; do file_env "FTP_${configEnvKey^^}" "/etc/vsftpd/vsftpd.conf"; done
 
     echo -e "${FTP_USER}\n${FTP_PASS}" > /etc/vsftpd/virtual_users.txt
     db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
