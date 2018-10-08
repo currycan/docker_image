@@ -43,7 +43,7 @@ if [ "$1" = 'vsftpd' -a "$(id -u)" = '0' ]; then
         chown -R vsftpd:vsftpd "$path"
     done
     # exec gosu `--user` "$BASH_SOURCE" "$@"
-    set -- gosu vsftpd "$@"
+    set -- gosu vsftpd /etc/vsftpd/vsftpd.conf "$@"
 fi
 
 # backwards compatibility for default environment variables
