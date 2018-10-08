@@ -73,6 +73,7 @@ if [ "$1" = 'vsftpd' ]; then
     · Redirect vsftpd log to STDOUT: No.
 EOB
     env
+    nl  /etc/vsftpd/vsftpd.conf
     set -- "$@" /etc/vsftpd/vsftpd.conf
 fi
 
