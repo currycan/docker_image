@@ -32,25 +32,23 @@ fi
 
 _config() {
     # backwards compatibility for default environment variables
-    : "${USER:=${FTP_USER:-admin}}"
-    : "${PASS:=${FTP_PASS:-$(cat /dev/urandom | tr -dc A-Z-a-z-0-9 | head -c ${LEN:-16})}}"
-    : "${ADDRESS:=${FTP_PASV_ADDRESS:-$(ip route|awk '/default/ { print $3 }')}}"
-    : "${PASV_MIN_PORT:=${FTP_PASV_MIN_PORT:-21100}}"
-    : "${PASV_MAX_PORT:=${FTP_PASV_MAX_PORT:-21110}}"
-    : "${LOG_STDOUT:=${FTP_LOG_STDOUT_FLAG:-true}}"
+    : "${FTP_USER:=${USER:-admin}}"
+    : "${FTP_PASS:=${PASS:-$(cat /dev/urandom | tr -dc A-Z-a-z-0-9 | head -c ${LEN:-16})}}"
+    : "${FTP_ADDRESS:=${PASV_ADDRESS:-$(ip route|awk '/default/ { print $3 }')}}"
+    : "${FTP_PASV_MIN_PORT:=${PASV_MIN_PORT:-21100}}"
+    : "${FTP_PASV_MAX_PORT:=${PASV_MAX_PORT:-21110}}"
 
     configEnvKeys=(
         user
         pass
         pasv_address
-        pasv_max_port
         pasv_min_port
-        log_stdout_flag
+        pasv_max_port
     )
 
     for configEnvKey in "${configEnvKeys[@]}"; do file_env "FTP_${configEnvKey^^}"; done
 
-    echo -e "${USER}\n${PASS}" > /etc/vsftpd/virtual_users.txt
+    echo -e "${FTP_USER}\n${FTP_PASS}" > /etc/vsftpd/virtual_users.txt
     db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
     # Get log file path
     LOG_FILE=`grep vsftpd_log_file /etc/vsftpd/vsftpd.conf|cut -d= -f2`
