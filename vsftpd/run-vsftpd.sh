@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -exou pipefail
+set -eou pipefail
 shopt -s nullglob
 
 # usage: file_env VAR [DEFAULT]
@@ -35,7 +35,7 @@ fi
 if [ "$1" = 'vsftpd' -a "$(id -u)" = '0' ]; then
     # backwards compatibility for default environment variables
     : "${USER:=${FTP_USER:-admin}}"
-    : "${PASS:=${FTP_PASS:-$(cat /dev/urandom | tr -dc A-Z-a-z-0-9 | head -c${1:-16})}}"
+    : "${PASS:=${FTP_PASS:-$(cat /dev/urandom | tr -dc A-Z-a-z-0-9 | head -c ${LEN:-16})}}"
     : "${ADDRESS:=${FTP_PASV_ADDRESS:-$(ip route|awk '/default/ { print $3 }')}}"
     : "${PASV_MIN_PORT:=${FTP_PASV_MIN_PORT:-21100}}"
     : "${PASV_MAX_PORT:=${FTP_PASV_MAX_PORT:-21110}}"
