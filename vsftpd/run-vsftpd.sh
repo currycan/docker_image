@@ -30,9 +30,7 @@ if [ "${1#-}" != "$1" ]; then
     set -- vsftpd /etc/vsftpd/vsftpd.conf "$@"
 fi
 
-# allow the container to be started with `--user`
-# if [[ "$1" == vsftpd* ]] && [ "$(id -u)" = '0' ]; then
-if [ "$1" = 'vsftpd' -a "$(id -u)" = '0' ]; then
+_config() {
     # backwards compatibility for default environment variables
     : "${USER:=${FTP_USER:-admin}}"
     : "${PASS:=${FTP_PASS:-$(cat /dev/urandom | tr -dc A-Z-a-z-0-9 | head -c ${LEN:-16})}}"
@@ -43,15 +41,6 @@ if [ "$1" = 'vsftpd' -a "$(id -u)" = '0' ]; then
 
     # Create home dir and update vsftpd user db:
     mkdir -p "/home/vsftpd/${USER}"
-
-    # Change the ownership of user-mutable directories to `--user`
-    for path in \
-        /home/vsftpd/${USER} \
-        /var/log/vsftpd \
-        /etc/vsftpd/ \
-    ; do
-        chown -R vsftpd:vsftpd "$path"
-    done
 
     configEnvKeys=(
         user
@@ -68,7 +57,27 @@ if [ "$1" = 'vsftpd' -a "$(id -u)" = '0' ]; then
     db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
     # Get log file path
     LOG_FILE=`grep xferlog_file /etc/vsftpd/vsftpd.conf|cut -d= -f2`
-    # exec gosu `--user` "$BASH_SOURCE" "$@"
-    set -- gosu "$@" vsftpd /etc/vsftpd/vsftpd.conf
+}
+
+# # allow the container to be started with `--user`
+# # if [[ "$1" == vsftpd* ]] && [ "$(id -u)" = '0' ]; then
+# if [ "$1" = 'vsftpd' -a "$(id -u)" = '0' ]; then
+#     _config
+#     # exec gosu `--user` "$BASH_SOURCE" "$@"
+#     set -- gosu "$@" vsftpd /etc/vsftpd/vsftpd.conf
+# fi
+
+if [ "$1" = 'vsftpd' ]; then
+    _config
+    cat << EOB
+    SERVER SETTINGS
+    ---------------
+    · FTP User: $FTP_USER
+    · FTP Password: $FTP_PASS
+    · Log file: $LOG_FILE
+    · Redirect vsftpd log to STDOUT: No.
+EOB
+    set -- "$@" /etc/vsftpd/vsftpd.conf
 fi
+
 exec "$@"
