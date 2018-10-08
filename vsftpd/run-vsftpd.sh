@@ -39,9 +39,6 @@ _config() {
     : "${PASV_MAX_PORT:=${FTP_PASV_MAX_PORT:-21110}}"
     : "${LOG_STDOUT:=${FTP_LOG_STDOUT_FLAG:-true}}"
 
-    # Create home dir and update vsftpd user db:
-    mkdir -p "/home/vsftpd/${USER}"
-
     configEnvKeys=(
         user
         pass
@@ -77,6 +74,7 @@ if [ "$1" = 'vsftpd' ]; then
     · Log file: $LOG_FILE
     · Redirect vsftpd log to STDOUT: No.
 EOB
+    env
     set -- "$@" /etc/vsftpd/vsftpd.conf
 fi
 
