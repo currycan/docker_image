@@ -25,7 +25,8 @@ file_env() {
     unset "$fileVar"
 }
 
-if [ "${1:0:1}" = '-' ]; then
+# if [ "${1:0:1}" = '-' ]; then
+if [ "${1#-}" != "$1" ]; then
     set -- vsftpd "$@"
 fi
 
