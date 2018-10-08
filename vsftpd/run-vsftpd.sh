@@ -69,7 +69,8 @@ if [ "$1" = 'vsftpd' -a "$(id -u)" = '0' ]; then
     # Get log file path
     LOG_FILE=`grep xferlog_file /etc/vsftpd/vsftpd.conf|cut -d= -f2`
     # exec gosu `--user` "$BASH_SOURCE" "$@"
-    set -- gosu /usr/sbin/vsftpd /etc/vsftpd/vsftpd.conf "$@"
+    # set -- gosu vsftpd /etc/vsftpd/vsftpd.conf "$@"
+    set -- gosu vsftpd "$0" "$@"
     echo "$@"
 fi
 echo "$@"
