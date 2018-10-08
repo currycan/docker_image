@@ -38,6 +38,7 @@ if [ "$1" = 'vsftpd' -a "$(id -u)" = '0' ]; then
     for path in \
         /home/vsftpd/${FTP_USER} \
         /var/log/vsftpd \
+        /etc/vsftpd/ \
     ; do
         chown -R vsftpd:vsftpd "$path"
     done
@@ -68,7 +69,7 @@ if [ "$1" = 'vsftpd' -a "$(id -u)" = '0' ]; then
     # Get log file path
     LOG_FILE=`grep xferlog_file /etc/vsftpd/vsftpd.conf|cut -d= -f2`
     # exec gosu `--user` "$BASH_SOURCE" "$@"
-    set -- gosu vsftpd /etc/vsftpd/vsftpd.conf "$@"
+    set -- gosu /usr/sbin/vsftpd /etc/vsftpd/vsftpd.conf "$@"
     echo "$@"
 fi
 echo "$@"
