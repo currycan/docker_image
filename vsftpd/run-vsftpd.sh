@@ -30,7 +30,8 @@ if [ "${1:0:1}" = '-' ]; then
 fi
 
 # allow the container to be started with `--user`
-if [ "$1" = 'vsftpd*' -a "$(id -u)" = '0' ]; then
+# if [[ "$1" == vsftpd* ]] && [ "$(id -u)" = '0' ]; then
+if [ "$1" = 'vsftpd' -a "$(id -u)" = '0' ]; then
     # Change the ownership of user-mutable directories to `--user`
     for path in \
         /home/vsftpd/${FTP_USER} \
@@ -42,7 +43,7 @@ if [ "$1" = 'vsftpd*' -a "$(id -u)" = '0' ]; then
     set -- gosu vsftpd /etc/vsftpd/vsftpd.conf "$@"
 fi
 
-if [ "$1" = 'vsftpd*' ]; then
+if [ "$1" = 'vsftpd' ]; then
     # backwards compatibility for default environment variables
     : "${USER:=${FTP_USER:-admin}}"
     : "${PASS:=${FTP_PASS:-$(cat /dev/urandom | tr -dc A-Z-a-z-0-9 | head -c${1:-16})}}"
