@@ -56,7 +56,7 @@ _config() {
     echo -e "${USER}\n${PASS}" > /etc/vsftpd/virtual_users.txt
     db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
     # Get log file path
-    LOG_FILE=`grep xferlog_file /etc/vsftpd/vsftpd.conf|cut -d= -f2`
+    LOG_FILE=`grep vsftpd_log_file /etc/vsftpd/vsftpd.conf|cut -d= -f2`
 }
 
 # # allow the container to be started with `--user`
@@ -72,8 +72,8 @@ if [ "$1" = 'vsftpd' ]; then
     cat << EOB
     SERVER SETTINGS
     ---------------
-    · FTP User: $FTP_USER
-    · FTP Password: $FTP_PASS
+    · FTP User: $USER
+    · FTP Password: $PASS
     · Log file: $LOG_FILE
     · Redirect vsftpd log to STDOUT: No.
 EOB
