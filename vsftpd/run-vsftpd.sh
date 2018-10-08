@@ -29,6 +29,7 @@ sed_conf() {
     local var="$1"
     local file="$2"
     sed -i -e "s!\${$var}!`eval echo '$'"$var"`!g" ${file}
+    sed -i -e "s!\$$var!`eval echo '$'"$var"`!g" ${file}
 }
 
 # if [ "${1:0:1}" = '-' ]; then
