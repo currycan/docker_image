@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eou pipefail
+set -exou pipefail
 shopt -s nullglob
 
 # usage: file_env VAR [DEFAULT]
@@ -25,25 +25,6 @@ file_env() {
     unset "$fileVar"
 }
 
-# backwards compatibility for default environment variables
-: "${USER:=${FTP_USER:-admin}}"
-: "${PASS:=${FTP_PASS:-$(cat /dev/urandom | tr -dc A-Z-a-z-0-9 | head -c${1:-16})}}"
-: "${ADDRESS:=${FTP_PASV_ADDRESS:-$(ip route|awk '/default/ { print $3 }')}}"
-: "${PASV_MIN_PORT:=${FTP_PASV_MIN_PORT:-21100}}"
-: "${PASV_MAX_PORT:=${FTP_PASV_MAX_PORT:-21110}}"
-: "${LOG_STDOUT:=${FTP_LOG_STDOUT_FLAG:-true}}"
-
-configEnvKeys=(
-    user
-    pass
-    pasv_address
-    pasv_max_port
-    pasv_min_port
-    log_stdout_flag
-)
-
-for configEnvKey in "${configEnvKeys[@]}"; do file_env "FTP_${configEnvKey^^}"; done
-
 if [ "${1:0:1}" = '-' ]; then
     set -- vsftpd "$@"
 fi
@@ -61,13 +42,32 @@ if [ "$1" = 'vsftpd*' -a "$(id -u)" = '0' ]; then
     set -- gosu vsftpd /etc/vsftpd/vsftpd.conf "$@"
 fi
 
-# Create home dir and update vsftpd user db:
-mkdir -p "/home/vsftpd/${FTP_USER}"
+if [ "$1" = 'vsftpd*']; then
+    # backwards compatibility for default environment variables
+    : "${USER:=${FTP_USER:-admin}}"
+    : "${PASS:=${FTP_PASS:-$(cat /dev/urandom | tr -dc A-Z-a-z-0-9 | head -c${1:-16})}}"
+    : "${ADDRESS:=${FTP_PASV_ADDRESS:-$(ip route|awk '/default/ { print $3 }')}}"
+    : "${PASV_MIN_PORT:=${FTP_PASV_MIN_PORT:-21100}}"
+    : "${PASV_MAX_PORT:=${FTP_PASV_MAX_PORT:-21110}}"
+    : "${LOG_STDOUT:=${FTP_LOG_STDOUT_FLAG:-true}}"
 
-echo -e "${FTP_USER}\n${FTP_PASS}" > /etc/vsftpd/virtual_users.txt
-db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
-# Get log file path
-LOG_FILE=`grep xferlog_file /etc/vsftpd/vsftpd.conf|cut -d= -f2`
+    configEnvKeys=(
+        user
+        pass
+        pasv_address
+        pasv_max_port
+        pasv_min_port
+        log_stdout_flag
+    )
 
+    for configEnvKey in "${configEnvKeys[@]}"; do file_env "FTP_${configEnvKey^^}"; done
+    # Create home dir and update vsftpd user db:
+    mkdir -p "/home/vsftpd/${FTP_USER}"
+
+    echo -e "${FTP_USER}\n${FTP_PASS}" > /etc/vsftpd/virtual_users.txt
+    db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
+    # Get log file path
+    LOG_FILE=`grep xferlog_file /etc/vsftpd/vsftpd.conf|cut -d= -f2`
+fi
 echo "$@"
 exec "$@"
