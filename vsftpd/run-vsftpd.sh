@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -exou pipefail
+set -eou pipefail
 shopt -s nullglob
 
 # usage: file_env VAR [DEFAULT]
@@ -41,6 +41,9 @@ if [ "$1" = 'vsftpd' -a "$(id -u)" = '0' ]; then
     : "${PASV_MAX_PORT:=${FTP_PASV_MAX_PORT:-21110}}"
     : "${LOG_STDOUT:=${FTP_LOG_STDOUT_FLAG:-true}}"
 
+    # Create home dir and update vsftpd user db:
+    mkdir -p "/home/vsftpd/${USER}"
+
     # Change the ownership of user-mutable directories to `--user`
     for path in \
         /home/vsftpd/${USER} \
@@ -60,8 +63,6 @@ if [ "$1" = 'vsftpd' -a "$(id -u)" = '0' ]; then
     )
 
     for configEnvKey in "${configEnvKeys[@]}"; do file_env "FTP_${configEnvKey^^}"; done
-    # Create home dir and update vsftpd user db:
-    mkdir -p "/home/vsftpd/${USER}"
 
     echo -e "${USER}\n${PASS}" > /etc/vsftpd/virtual_users.txt
     db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
