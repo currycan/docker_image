@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -exou pipefail
+set -eou pipefail
 shopt -s nullglob
 
 # usage: file_env VAR [DEFAULT]
@@ -27,7 +27,8 @@ file_env() {
 
 # if [ "${1:0:1}" = '-' ]; then
 if [ "${1#-}" != "$1" ]; then
-    set -- vsftpd /etc/vsftpd/vsftpd.conf "$@"
+    set -- "$@" /etc/vsftpd/vsftpd.conf
+    echo ">>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<"
     echo "$@"
 fi
 
@@ -43,7 +44,7 @@ if [ "$1" = 'vsftpd' -a "$(id -u)" = '0' ]; then
         chown -R vsftpd:vsftpd "$path"
     done
     # exec gosu `--user` "$BASH_SOURCE" "$@"
-    set -- gosu vsftpd /etc/vsftpd/vsftpd.conf "$@"
+    set -- gosu "$@" vsftpd /etc/vsftpd/vsftpd.conf
 fi
 
 # backwards compatibility for default environment variables
@@ -74,5 +75,4 @@ LOG_FILE=`grep xferlog_file /etc/vsftpd/vsftpd.conf|cut -d= -f2`
 
 # set -- gosu vsftpd /etc/vsftpd/vsftpd.conf "$@"
 
-echo "$@"
 exec "$@"
