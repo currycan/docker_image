@@ -49,10 +49,10 @@ EOF
 ali_repo(){
     mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
     curl -so /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
-    yum install -y yum-utils device-mapper-persistent-data lvm2
-    yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
     yum clean all
     yum makecache -y
+    yum install -y yum-utils device-mapper-persistent-data lvm2
+    yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
     echo "install aliyun repo"
     mkdir -p /etc/docker/
     cat << EOF > /etc/docker/daemon.json
@@ -75,6 +75,8 @@ EOF
 native_repo(){
     yum install -y yum-utils device-mapper-persistent-data lvm2
     yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+    yum clean all
+    yum makecache -y
     echo "install native repo"
     mkdir -p /etc/docker/
     cat << EOF > /etc/docker/daemon.json
