@@ -8,20 +8,28 @@ GOOGLE_FLAG=${GOOGLE:-www.google.com}
 [[ $EUID -ne 0 ]] && echo -e "Error: This script must be run as root" && exit 1
 
 iibu_repo(){
-    rm -rf /etc/yum.repos.d.backup
-    mv /etc/yum.repos.d/ /etc/yum.repos.d.backup
-    mkdir -p /etc/yum.repos.d/
-    for file in $(curl -s http://mirrors.fmsh.com:81/fmsh_repos/ |
-                      grep href |
-                      sed 's/.*href="//' |
-                      sed 's/".*//' |
-                      grep '^[a-zA-Z].*'); do
-        curl -so /etc/yum.repos.d/$file http://mirrors.fmsh.com:81/fmsh_repos/$file
-    done
-    rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
-    yum clean all
-    yum makecache -y
+    iibu_repo_flag=`grep $IP_FLAG" mirrors.fmsh.com" /etc/hosts | wc -l`
+    if [ $iibu_repo_flag = 0 ];then
+        cat >> /etc/hosts << EOL
+$IP_FLAG mirrors.fmsh.com
+EOL
+        rm -rf /etc/yum.repos.d.backup
+        mv /etc/yum.repos.d/ /etc/yum.repos.d.backup
+        mkdir -p /etc/yum.repos.d/
+        for file in $(curl -s http://mirrors.fmsh.com:81/fmsh_repos/ |
+                          grep href |
+                          sed 's/.*href="//' |
+                          sed 's/".*//' |
+                          grep '^[a-zA-Z].*'); do
+            curl -so /etc/yum.repos.d/$file http://mirrors.fmsh.com:81/fmsh_repos/$file
+        done
+        rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+        yum clean all
+        yum makecache -y
     echo ">>>> install IIBU repo"
+    else
+        echo ">>>> already install IIBU repo!"
+    fi
     mkdir -p /etc/docker/
     cat << EOF > /etc/docker/daemon.json
 {
@@ -47,13 +55,17 @@ EOF
 }
 
 ali_repo(){
-    mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
-    curl -so /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
-    yum clean all
-    yum makecache -y
+    if [ ! -f /etc/yum.repos.d/CentOS-Base.repo.backup ];then
+        mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
+        curl -so /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+        yum clean all
+        yum makecache -y
+        echo ">>>> install aliyun repo"
+    else
+        echo ">>>> already install aliyun repo!"
+    fi
     yum install -y yum-utils device-mapper-persistent-data lvm2
     yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
-    echo "install aliyun repo"
     mkdir -p /etc/docker/
     cat << EOF > /etc/docker/daemon.json
 {
@@ -77,7 +89,7 @@ native_repo(){
     yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
     yum clean all
     yum makecache -y
-    echo "install native repo"
+    echo ">>>> install native repo"
     mkdir -p /etc/docker/
     cat << EOF > /etc/docker/daemon.json
 {
@@ -106,9 +118,6 @@ initial_repo(){
             native_repo
         fi
     else
-        cat >> /etc/hosts << EOL
-$IP_FLAG mirrors.fmsh.com
-EOL
         iibu_repo
     fi
 }
