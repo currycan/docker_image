@@ -3,7 +3,9 @@ FROM currycan/openjdk:8-jre
 LABEL maintainer "Platform/IIBU <zhangzhitao@fmsh.com.cn>"
 
 RUN set -ex; yum update -y; \
-    yum install -y subversion git libtool-ltdl; \
+    rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+    rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm
+    yum install -y subversion ansible git libtool-ltdl; \
     curl -o /etc/yum.repos.d/wandisco-svn.repo https://raw.githubusercontent.com/currycan/docker_image/master/jenkins/wandisco-svn.repo; \
     yum --disablerepo="*" --enablerepo="WandiscoSVN" install -y subversion; \
     yum clean all
