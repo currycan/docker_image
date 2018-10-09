@@ -87,8 +87,6 @@ EOF
 native_repo(){
     yum install -y yum-utils device-mapper-persistent-data lvm2
     yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    yum clean all
-    yum makecache -y
     echo ">>>> install native repo"
     mkdir -p /etc/docker/
     cat << EOF > /etc/docker/daemon.json
