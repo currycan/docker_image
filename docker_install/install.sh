@@ -107,7 +107,7 @@ initial_repo(){
         fi
     else
         cat >> /etc/hosts << EOL
-$IP mirrors.fmsh.com
+$IP_FLAG mirrors.fmsh.com
 EOL
         iibu_repo
     fi
