@@ -4,49 +4,69 @@ export PATH
 
 [[ $EUID -ne 0 ]] && echo -e "${red}Error:${plain} This script must be run as root!" && exit 1
 
-IP=${IP:-192.168.43.92}
+IP_FLAG=${IP:-192.168.43.92}
+GOOGLE_FLAG=${GOOGLE:-www.google.com}
 
 iibu_repo(){
-    rm -rf /etc/yum.repos.d.backup
-    mv /etc/yum.repos.d/ /etc/yum.repos.d.backup
-    mkdir -p /etc/yum.repos.d/
-    for file in $(curl -s http://mirrors.fmsh.com:81/fmsh_repos/ |
-                      grep href |
-                      sed 's/.*href="//' |
-                      sed 's/".*//' |
-                      grep '^[a-zA-Z].*'); do
-        curl -so /etc/yum.repos.d/$file http://mirrors.fmsh.com:81/fmsh_repos/$file
-    done
-    rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
-    yum clean all
-    yum makecache -y
-    echo "install IIBU repo"
+    iibu_repo_flag=`grep $IP_FLAG" mirrors.fmsh.com" /etc/hosts | wc -l`
+    if [ $iibu_repo_flag = 0 ];then
+        cat >> /etc/hosts << EOL
+$IP_FLAG mirrors.fmsh.com
+EOL
+        rm -rf /etc/yum.repos.d.backup
+        mv /etc/yum.repos.d/ /etc/yum.repos.d.backup
+        mkdir -p /etc/yum.repos.d/
+        for file in $(curl -s http://mirrors.fmsh.com:81/fmsh_repos/ |
+                          grep href |
+                          sed 's/.*href="//' |
+                          sed 's/".*//' |
+                          grep '^[a-zA-Z].*'); do
+            curl -so /etc/yum.repos.d/$file http://mirrors.fmsh.com:81/fmsh_repos/$file
+        done
+        rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+        yum clean all
+        yum makecache -y
+        echo ">>>> install IIBU repo"
+    else
+        echo ">>>> already install IIBU repo!"
+    fi
 }
 
 ali_repo(){
-    # mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
-    # curl -so /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+    if [ ! -f /etc/yum.repos.d/CentOS-Base.repo.backup ];then
+        mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
+        curl -so /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+        yum clean all
+        yum makecache -y
+        echo ">>>> install aliyun repo"
+    else
+        echo ">>>> already install aliyun repo!"
+    fi
     rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
     rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm
-    yum clean all
-    yum makecache -y
-    echo "install aliyun repo"
+}
+
+native_repo(){
+    rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+    rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm
 }
 
 initial_repo(){
-    line=`ping $IP -c 1 -s 1 -W 1 | grep "100% packet loss" | wc -l`
+    line=`ping $IP_FLAG -c 1 -s 1 -W 1 | grep "100% packet loss" | wc -l`
+    pong=`ping $GOOGLE_FLAG -c 1 -s 1 -W 1 | grep "100% packet loss" | wc -l`
     if [ "${line}" != "0" ]; then
-        ali_repo
+        if [ "${pong}" != "0" ]; then
+            ali_repo
+        else
+            native_repo
+        fi
     else
-        cat >> /etc/hosts << EOL
-$IP mirrors.fmsh.com
-EOL
         iibu_repo
     fi
 }
 
 version_ge(){
-    test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1"
+    test "$(echo " $@" | tr " " "\n" | sort -rV | head -n 1)" == "$1"
 }
 
 check_kernel_version() {
@@ -94,7 +114,7 @@ kernel_install() {
 }
 
 kernel_uninstall(){
-    grub2-set-default "CentOS Linux (3.10.0-514.el7.x86_64) 7 (Core)"
+    grub2-set-default "CentOS Linux (3.10.0-862.2.3.el7.x86_64) 7 (Core)"
     reboot_os
 }
 
@@ -104,7 +124,7 @@ if [ -n "$1" ] ;then
     elif [ $1 = 'uninstall' ]; then
         kernel_uninstall
     else
-        echo "Please input 'install' to install or 'uninstall' to uninstall"
+        echo ">>>> Please input 'install' to install or 'uninstall' to uninstall"
     fi
 else
     kernel_install
