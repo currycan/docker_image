@@ -2,7 +2,8 @@
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
-IP=${IP:-192.168.43.92}
+IP_FLAG=${IP:-192.168.43.92}
+GOOGLE_FLAG=${GOOGLE:-www.google.com}
 
 [[ $EUID -ne 0 ]] && echo -e "Error: This script must be run as root" && exit 1
 
@@ -20,7 +21,29 @@ iibu_repo(){
     rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
     yum clean all
     yum makecache -y
-    echo "install IIBU repo"
+    echo ">>>> install IIBU repo"
+    mkdir -p /etc/docker/
+    cat << EOF > /etc/docker/daemon.json
+{
+    "registry-mirrors": [
+        "https://registry.docker-cn.com",
+        "https://8trm4p9x.mirror.aliyuncs.com",
+        "http://010a79c4.m.daocloud.io",
+        "https://docker.mirrors.ustc.edu.cn/"
+    ],
+    "insecure-registries": ["192.168.39.0/24","192.168.43.0/24","harbor.iibu.com"],
+    "storage-driver": "overlay2",
+    "exec-opts": ["native.cgroupdriver=cgroupfs"],
+    "max-concurrent-downloads": 10,
+    "log-driver": "json-file",
+    "log-level": "warn",
+    "log-opts": {
+       "max-size": "10m",
+       "max-file": "3"
+    }
+}
+EOF
+    echo ">>>> IIBU docker deamon"
 }
 
 ali_repo(){
@@ -31,12 +54,55 @@ ali_repo(){
     yum clean all
     yum makecache -y
     echo "install aliyun repo"
+    mkdir -p /etc/docker/
+    cat << EOF > /etc/docker/daemon.json
+{
+    "insecure-registries": ["harbor.iibu.com"],
+    "storage-driver": "overlay2",
+    "exec-opts": ["native.cgroupdriver=cgroupfs"],
+    "max-concurrent-downloads": 10,
+    "log-driver": "json-file",
+    "log-level": "warn",
+    "log-opts": {
+       "max-size": "10m",
+       "max-file": "3"
+    }
+}
+EOF
+    echo ">>>> aliyun docker deamon"
+}
+
+native_repo(){
+    yum install -y yum-utils device-mapper-persistent-data lvm2
+    yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+    echo "install native repo"
+    mkdir -p /etc/docker/
+    cat << EOF > /etc/docker/daemon.json
+{
+    "insecure-registries": ["harbor.iibu.com"],
+    "storage-driver": "overlay2",
+    "exec-opts": ["native.cgroupdriver=cgroupfs"],
+    "max-concurrent-downloads": 10,
+    "log-driver": "json-file",
+    "log-level": "warn",
+    "log-opts": {
+       "max-size": "10m",
+       "max-file": "3"
+    }
+}
+EOF
+    echo ">>>> native docker deamon"
 }
 
 initial_repo(){
-    line=`ping $IP -c 1 -s 1 -W 1 | grep "100% packet loss" | wc -l`
+    line=`ping $IP_FLAG -c 1 -s 1 -W 1 | grep "100% packet loss" | wc -l`
+    pong=`ping $GOOGLE_FLAG -c 1 -s 1 -W 1 | grep "100% packet loss" | wc -l`
     if [ "${line}" != "0" ]; then
-        ali_repo
+        if [ "${pong}" != "0" ]; then
+            ali_repo
+        else
+            native_repo
+        fi
     else
         cat >> /etc/hosts << EOL
 $IP mirrors.fmsh.com
@@ -44,7 +110,6 @@ EOL
         iibu_repo
     fi
 }
-
 
 uninstall(){
     if type docker >/dev/null 2>&1; then
@@ -70,28 +135,8 @@ install(){
     pip install -U docker-compose
     yum install -y docker-ce
     systemctl enable docker && systemctl start docker
-    #\curl -o /usr/local/bin/docker-compose http://mirrors.fmsh.com:81/others/docker-compose
-    chmod +x /usr/local/bin/docker-compose
-    cat << EOF > /etc/docker/daemon.json
-{
-    "registry-mirrors": [
-        "https://registry.docker-cn.com",
-        "https://8trm4p9x.mirror.aliyuncs.com",
-        "http://010a79c4.m.daocloud.io",
-        "https://docker.mirrors.ustc.edu.cn/"
-    ],
-    "insecure-registries": ["192.168.39.0/24","192.168.43.0/24","harbor.iibu.com"],
-    "storage-driver": "overlay2",
-    "exec-opts": ["native.cgroupdriver=cgroupfs"],
-    "max-concurrent-downloads": 10,
-    "log-driver": "json-file",
-    "log-level": "warn",
-    "log-opts": {
-       "max-size": "10m",
-       "max-file": "3"
-    }
-}
-EOF
+    # \curl -o /usr/local/bin/docker-compose http://mirrors.fmsh.com:81/others/docker-compose
+    # chmod +x /usr/local/bin/docker-compose
     cat <<EOF >  /etc/sysctl.d/docker.conf
 net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
