@@ -92,7 +92,6 @@ install_kernel() {
 reboot_os() {
     echo -e "Info: The system needs to reboot."
     read -p "Do you want to restart system? [y/n]" is_reboot
-    is_reboot="y"
     if [[ ${is_reboot} == "y" || ${is_reboot} == "Y" ]]; then
         reboot
     else
