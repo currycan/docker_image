@@ -46,7 +46,7 @@ EOL
     "log-driver": "json-file",
     "log-level": "warn",
     "metrics-addr" : "127.0.0.1:9323",
-    "experimental" : true
+    "experimental" : true,
     "log-opts": {
        "max-size": "10m",
        "max-file": "3"
