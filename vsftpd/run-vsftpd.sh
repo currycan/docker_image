@@ -1,88 +1,182 @@
 #!/usr/bin/env bash
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
+export PATH
 
-set -exou pipefail
-shopt -s nullglob
+IP_FLAG=${IP:-192.168.43.92}
+GOOGLE_FLAG=${GOOGLE:-www.google.com}
 
-# usage: file_env VAR [DEFAULT]
-#    ie: file_env 'XYZ_DB_PASSWORD' 'example'
-# (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of
-#  "$XYZ_DB_PASSWORD" from a file, especially for Docker's secrets feature)
-file_env() {
-    local var="$1"
-    local fileVar="${var}_FILE"
-    local def="${2:-}"
-    if [ "${!var:-}" ] && [ "${!fileVar:-}" ]; then
-        echo >&2 "error: both $var and $fileVar are set (but are exclusive)"
-        exit 1
+[[ $EUID -ne 0 ]] && echo -e "Error: This script must be run as root" && exit 1
+
+iibu_repo(){
+    iibu_repo_flag=`grep $IP_FLAG" mirrors.fmsh.com" /etc/hosts | wc -l`
+    if [ $iibu_repo_flag = 0 ];then
+        cat >> /etc/hosts << EOL
+$IP_FLAG mirrors.fmsh.com
+EOL
+        rm -rf /etc/yum.repos.d.backup
+        mv /etc/yum.repos.d/ /etc/yum.repos.d.backup
+        mkdir -p /etc/yum.repos.d/
+        for file in $(curl -s http://mirrors.fmsh.com:81/fmsh_repos/ |
+                          grep href |
+                          sed 's/.*href="//' |
+                          sed 's/".*//' |
+                          grep '^[a-zA-Z].*'); do
+            curl -so /etc/yum.repos.d/$file http://mirrors.fmsh.com:81/fmsh_repos/$file
+        done
+        rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+        yum clean all
+        yum makecache -y
+    echo ">>>> install IIBU repo"
+    else
+        echo ">>>> already install IIBU repo!"
     fi
-    local val="$def"
-    if [ "${!var:-}" ]; then
-        val="${!var}"
-    elif [ "${!fileVar:-}" ]; then
-        val="$(< "${!fileVar}")"
+    mkdir -p /etc/docker/
+    cat << EOF > /etc/docker/daemon.json
+{
+    "registry-mirrors": [
+        "https://registry.docker-cn.com",
+        "https://8trm4p9x.mirror.aliyuncs.com",
+        "http://010a79c4.m.daocloud.io",
+        "https://docker.mirrors.ustc.edu.cn/"
+    ],
+    "insecure-registries": ["192.168.39.0/24","192.168.43.0/24","harbor.iibu.com"],
+    "storage-driver": "overlay2",
+    "exec-opts": ["native.cgroupdriver=cgroupfs"],
+    "max-concurrent-downloads": 10,
+    "log-driver": "json-file",
+    "log-level": "warn",
+    "metrics-addr" : "0.0.0.0:9323",
+    "experimental" : true,
+    "log-opts": {
+       "max-size": "10m",
+       "max-file": "3"
+    }
+}
+EOF
+    echo ">>>> IIBU docker deamon"
+}
+
+ali_repo(){
+    if [ ! -f /etc/yum.repos.d/CentOS-Base.repo.backup ];then
+        mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
+        curl -so /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+        yum clean all
+        yum makecache -y
+        echo ">>>> install aliyun repo"
+    else
+        echo ">>>> already install aliyun repo!"
     fi
-    export "$var"="$val"
-    unset "$fileVar"
+    yum install -y yum-utils device-mapper-persistent-data lvm2
+    yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+    mkdir -p /etc/docker/
+    cat << EOF > /etc/docker/daemon.json
+{
+    "insecure-registries": ["harbor.iibu.com"],
+    "storage-driver": "overlay2",
+    "exec-opts": ["native.cgroupdriver=cgroupfs"],
+    "max-concurrent-downloads": 10,
+    "log-driver": "json-file",
+    "log-level": "warn",
+    "metrics-addr" : "0.0.0.0:9323",
+    "experimental" : true,
+    "log-opts": {
+       "max-size": "10m",
+       "max-file": "3"
+    }
+}
+EOF
+    echo ">>>> aliyun docker deamon"
 }
 
-sed_conf() {
-    local var="$1"
-    local file="$2"
-    sed -i -e "s!\${$var}!`eval echo '$'"$var"`!g" ${file}
-    sed -i -e "s!\$$var!`eval echo '$'"$var"`!g" ${file}
+native_repo(){
+    yum install -y yum-utils device-mapper-persistent-data lvm2
+    yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+    echo ">>>> install native repo"
+    mkdir -p /etc/docker/
+    cat << EOF > /etc/docker/daemon.json
+{
+    "insecure-registries": ["harbor.iibu.com"],
+    "storage-driver": "overlay2",
+    "exec-opts": ["native.cgroupdriver=cgroupfs"],
+    "max-concurrent-downloads": 10,
+    "log-driver": "json-file",
+    "log-level": "warn",
+    "metrics-addr" : "0.0.0.0:9323",
+    "experimental" : true,
+    "log-opts": {
+       "max-size": "10m",
+       "max-file": "3"
+    }
+}
+EOF
+    echo ">>>> native docker deamon"
 }
 
-# if [ "${1:0:1}" = '-' ]; then
-if [ "${1#-}" != "$1" ]; then
-    set -- vsftpd /etc/vsftpd/vsftpd.conf "$@"
+initial_repo(){
+    line=`ping $IP_FLAG -c 1 -s 1 -W 1 | grep "100% packet loss" | wc -l`
+    pong=`ping $GOOGLE_FLAG -c 1 -s 1 -W 1 | grep "100% packet loss" | wc -l`
+    if [ "${line}" != "0" ]; then
+        if [ "${pong}" != "0" ]; then
+            ali_repo
+        else
+            native_repo
+        fi
+    else
+        iibu_repo
+    fi
+}
+
+uninstall(){
+    if type docker >/dev/null 2>&1; then
+    yum remove docker -y \
+               docker-client \
+               docker-client-latest \
+               docker-common \
+               docker-latest \
+               docker-latest-logrotate \
+               docker-logrotate \
+               docker-selinux \
+               docker-engine-selinux \
+               docker-engine
+    systemctl disable docker
+    rm -f /etc/systemd/system/multi-user.target.wants/docker.service 
+   fi
+} 
+
+install(){
+    yum -y install vim wget net-tools telnet epel-release lrzsz lsof bash-completion
+    yum install -y python-pip
+    pip install -U pip
+    pip install -U docker-compose
+    yum install -y docker-ce
+    systemctl enable docker && systemctl start docker
+    # \curl -o /usr/local/bin/docker-compose http://mirrors.fmsh.com:81/others/docker-compose
+    # chmod +x /usr/local/bin/docker-compose
+    cat <<EOF >  /etc/sysctl.d/docker.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+    sysctl --system
+    systemctl daemon-reload && systemctl restart docker
+    docker info
+    docker-compose version
+    echo "All done"
+}
+
+docker_install() {
+    initial_repo
+    uninstall
+    install
+}
+
+if [ -n "$1" ] ;then
+    if [ $1 = 'install' ];then
+        docker_install
+    elif [ $1 = 'uninstall' ]; then
+        uninstall
+    else
+        echo "Please input 'install' to install or 'uninstall' to uninstall"
+    fi
+else
+    docker_install
 fi
-
-_config() {
-    # backwards compatibility for default environment variables
-    : "${FTP_USER:=${USER:-admin}}"
-    : "${FTP_PASS:=${PASS:-$(cat /dev/urandom | tr -dc A-Z-a-z-0-9 | head -c ${LEN:-16})}}"
-    : "${FTP_PASV_ADDRESS:=${PASV_ADDRESS:-$(ip route|awk '/default/ { print $3 }')}}"
-    : "${FTP_PASV_MIN_PORT:=${PASV_MIN_PORT:-21100}}"
-    : "${FTP_PASV_MAX_PORT:=${PASV_MAX_PORT:-21110}}"
-
-    configEnvKeys=(
-        user
-        pass
-        pasv_address
-        pasv_min_port
-        pasv_max_port
-    )
-
-    for configEnvKey in "${configEnvKeys[@]}"; do file_env "FTP_${configEnvKey^^}"; done
-    for configEnvKey in "${configEnvKeys[@]}"; do sed_conf "FTP_${configEnvKey^^}" "/etc/vsftpd/vsftpd.conf"; done
-
-    echo -e "${FTP_USER}\n${FTP_PASS}" > /etc/vsftpd/virtual_users.txt
-    db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
-    # Get log file path
-    FTP_LOG_FILE=`grep vsftpd_log_file /etc/vsftpd/vsftpd.conf|cut -d= -f2`
-}
-
-# # allow the container to be started with `--user`
-# # if [[ "$1" == vsftpd* ]] && [ "$(id -u)" = '0' ]; then
-# if [ "$1" = 'vsftpd' -a "$(id -u)" = '0' ]; then
-#     _config
-#     # exec gosu `--user` "$BASH_SOURCE" "$@"
-#     set -- gosu "$@" vsftpd /etc/vsftpd/vsftpd.conf
-# fi
-
-if [ "$1" = 'vsftpd' ]; then
-    _config
-    cat << EOB
-    SERVER SETTINGS
-    ---------------
-    · FTP User: $FTP_USER
-    · FTP Password: $FTP_PASS
-    · Log file: $FTP_LOG_FILE
-    · Redirect vsftpd log to STDOUT: No.
-EOB
-    env
-    set -- "$@" /etc/vsftpd/vsftpd.conf
-    nl /etc/vsftpd/vsftpd.conf
-fi
-
-exec "$@"
