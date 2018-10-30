@@ -77,6 +77,8 @@ ali_repo(){
     "max-concurrent-downloads": 10,
     "log-driver": "json-file",
     "log-level": "warn",
+    "metrics-addr" : "0.0.0.0:9323",
+    "experimental" : true,
     "log-opts": {
        "max-size": "10m",
        "max-file": "3"
@@ -99,6 +101,8 @@ native_repo(){
     "max-concurrent-downloads": 10,
     "log-driver": "json-file",
     "log-level": "warn",
+    "metrics-addr" : "0.0.0.0:9323",
+    "experimental" : true,
     "log-opts": {
        "max-size": "10m",
        "max-file": "3"
