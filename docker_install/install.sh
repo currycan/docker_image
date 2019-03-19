@@ -2,6 +2,8 @@
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
+set -e
+
 IP_FLAG=${IP:-192.168.43.92}
 GOOGLE_FLAG=${GOOGLE:-www.google.com}
 
