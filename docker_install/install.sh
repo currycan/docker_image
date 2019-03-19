@@ -123,8 +123,8 @@ initial_repo(){
         else
             native_repo
         fi
-    # else
-    #     iibu_repo
+    else
+        ali_repo
     fi
 }
 
