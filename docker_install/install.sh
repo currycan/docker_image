@@ -144,11 +144,12 @@ uninstall(){
 } 
 
 install(){
+    DOCKER_VER="18.09.3-3.el7.x86_64"
     yum -y install vim wget net-tools telnet epel-release lrzsz lsof bash-completion
     yum install -y python-pip
     pip install -U pip
     pip install -U docker-compose
-    yum install -y docker-ce
+    yum install -y docker-ce-${DOCKER_VER}
     systemctl enable docker && systemctl start docker
     # \curl -o /usr/local/bin/docker-compose http://mirrors.fmsh.com:81/others/docker-compose
     # chmod +x /usr/local/bin/docker-compose
