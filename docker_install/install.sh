@@ -148,8 +148,9 @@ uninstall(){
 install(){
     DOCKER_VER="18.09.3-3.el7.x86_64"
     yum -y install vim wget net-tools telnet epel-release lrzsz lsof bash-completion
-    yum install -y python-pip
-    pip install -U pip
+    wget --no-check-certificate -O ./get-pip.py https://bootstrap.pypa.io/get-pip.py
+    python get-pip.py
+    rm -f get-pip.py
     pip install -U docker-compose
     yum install -y docker-ce-${DOCKER_VER}
     systemctl enable docker && systemctl start docker
