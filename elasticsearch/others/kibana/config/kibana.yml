@@ -1,0 +1,23 @@
+---
+## Default Kibana configuration from kibana-docker.
+## from https://github.com/elastic/kibana-docker/blob/master/build/kibana/config/kibana.yml
+#
+server.name: kibana
+server.host: ${KIBANA_SERVER_HOST}
+server.port: ${KIBANA_SERVER_PORT}
+elasticsearch.url: ${KIBANA_ES_URL}
+
+logging.useUTC: false
+
+## Disable X-Pack
+## see https://www.elastic.co/guide/en/x-pack/current/xpack-settings.html
+##     https://www.elastic.co/guide/en/x-pack/current/installing-xpack.html#xpack-enabling
+#
+xpack.security.enabled: false
+xpack.ml.enabled: false
+xpack.reporting.enabled: false
+xpack.apm.ui.enabled: false
+xpack.graph.enabled: false
+
+xpack.monitoring.enabled: true
+xpack.grokdebugger.enabled: true

@@ -1,0 +1,19 @@
+version: '3.3'
+services:
+  access_service:
+    image: harbor.iibu.com/base/fluentd:1.4.0
+    container_name: fluentd_1.4.0
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./fluentd.conf:/etc/fluentd/fluentd.conf
+      - ./log:/fluentd/log
+      - ./etc:/fluentd/etc
+    environment:
+      - FLUENTD_CONF=fluentd.conf
+      - HOST_NAME=192.168.43.143
+    restart: always
+    logging:
+      options:
+        max-size: "100M"
+        max-file: "3"

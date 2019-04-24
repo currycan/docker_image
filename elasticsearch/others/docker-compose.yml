@@ -1,0 +1,69 @@
+version: '3.1'
+
+services:
+  es:
+    image: harbor.iibu.com/base/elasticsearch:6.4.2
+    container_name: es_node1
+    domainname: elasticsearch
+    hostname: es_node1
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "ES_CLUSTER_NAME=test_es_cluster"
+      - "ES_HTTP_PORT=9200"
+      - "ES_TCP_PORT=9300"
+      - "ES_PUBLISH_HOST=192.168.43.106"
+      ## 解决目录权限问题
+      - "TAKE_FILE_OWNERSHIP=1"
+      - "discovery.zen.minimum_master_nodes=2"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch,elasticsearch2,elasticsearch3"
+    volumes:
+      - "./es/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro"
+      # 先 df -h 看下最大的本地分区, 在最大本地分区上创建存放数据的目录.
+      - "/app/elastic/es-data:/usr/share/elasticsearch/data"
+      - "es-repo:/elastic/backup/"
+    ports:
+      - 9200:9200
+      - 9300:9300
+    extra_hosts:
+      - "elasticsearch:192.168.43.106"
+      - "elasticsearch2:192.168.43.107"
+      - "elasticsearch3:192.168.43.143"
+    network_mode: "host"
+    ulimits:
+      nofile: 65536
+      memlock:
+        soft: -1
+        hard: -1
+    logging:
+      options:
+        max-size: '100M'
+        max-file: '3'
+
+  kibana:
+    image: harbor.iibu.com/base/iibu-kibana:6.4.2
+    hostname: kibana_node1
+    volumes:
+      - "./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro"
+    environment:
+      - "KIBANA_SERVER_HOST=elasticsearch"
+      - "KIBANA_SERVER_PORT=5601"
+      ## 修改端口号, 同 ES_HTTP_PORT
+      - "KIBANA_ES_URL=http://elasticsearch:9200" #DevSkim: ignore DS137138
+    ports:
+      - 5601:5601
+    extra_hosts:
+      - "elasticsearch:192.168.43.106"
+      - "elasticsearch2:192.168.43.107"
+      - "elasticsearch3:192.168.43.143"
+    network_mode: "host"
+    logging:
+      options:
+        max-size: '100M'
+        max-file: '3'
+
+volumes:
+  es-repo:
+    driver_opts:
+      type: nfs
+      o: "addr=192.168.43.143,nolock,soft,rw,tcp,timeo=180"
+      device: ":/app/es-repo"

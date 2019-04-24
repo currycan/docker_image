@@ -1,0 +1,76 @@
+
+# Use a descriptive name for your cluster:
+cluster.name: ${ES_CLUSTER_NAME}
+
+# Use a descriptive name for the node:
+node.name: ${HOSTNAME}
+
+# set the node can be voted as as master
+node.master: true
+
+# set the node as date that store the index data
+node.data: true
+
+## 声明 node 的属性
+cluster.routing.allocation.awareness.attributes: tag
+## 后面可以使用该属性index.routing.allocation.*
+## 比如: 设置索引 test 移动 shard 到 node.attr.tag 包括 "big, medium"的节点上
+## PUT test/_settings
+## {
+##  "index.routing.allocation.include.tag": "big,medium"
+## }
+node.attr.tag: hot
+
+## memory
+## if fail then ulimit -l unlimited
+## for product
+bootstrap.memory_lock: true
+
+## fielddata
+indices.fielddata.cache.size: 10%
+
+## backup
+path.repo: ["/elastic/backup"]
+
+# # Allow recovery process after N nodes in a cluster are up
+# gateway.recover_after_nodes: 1
+
+# # Set the timeout to initiate the recovery process, once the N nodes
+# # from previous setting are up (accepts time value):
+# gateway.recover_after_time: 10m
+
+# # Set how many nodes are expected in this cluster. Once these N nodes
+# # are up (and recover_after_nodes is met), begin recovery process immediately
+# # (without waiting for recover_after_time to expire):
+# gateway.expected_nodes: 1
+
+# # Set to throttle throughput when recovering (eg. 100mb, by default 20mb)
+indices.recovery.max_bytes_per_sec: 100mb
+
+## network
+network.host: 0.0.0.0
+http.port: ${ES_HTTP_PORT}
+transport.tcp.port: ${ES_TCP_PORT}
+
+## 默认 network.publish_host = network.host. 但是 network.host: 0.0.0.0，则需明确定义 network.publish_host
+network.publish_host: ${ES_PUBLISH_HOST}
+
+## discovery
+# discovery.zen.minimum_master_nodes: 1
+# discovery.zen.fd.ping_timeout: 60s
+# discovery.zen.ping.unicast.hosts:
+#   - elasticsearch:9300
+#   - elasticsearch2:9301
+
+# x-pack
+xpack.security.enabled: false
+xpack.monitoring.enabled: true
+xpack.watcher.enabled: true
+xpack.ml.enabled: false
+
+# ---------------------------------- Various -----------------------------------
+#
+# Require explicit names when deleting indices:
+#
+action.destructive_requires_name: true
+
